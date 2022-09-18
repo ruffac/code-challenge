@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
+import { table } from "table";
 import { CommandNames } from "../commands.js";
 import { challengeIds } from "../constants.js";
 import { ChallengeModel } from "../database/models/challengeModel.js";
@@ -29,25 +30,34 @@ export const status = async (interaction) => {
 export const getChallengeStatus = async (challenge) => {
   const now = new Date();
   const daysLeft = Math.ceil((challenge.endDate - now) / (1000 * 3600 * 24));
-  let responseBuilder = "";
-  responseBuilder += `🚀 Challenge ${challenge.name} updates 🚀\n`;
-  responseBuilder += `${challenge.challengers.length} joined.\n`;
-  responseBuilder += await getChallengeProgress(challenge.challengers);
-  responseBuilder += `${daysLeft} days left. Carry on!\n`;
-  responseBuilder += `Challenge ends on ${challenge.endDate}`;
+  // let responseBuilder = "";
+  let responseBuilder =
+    `:rocket: ${challenge.name} challenge stats :rocket:\n` +
+    `${challenge.challengers.length} joined. :drum:\n` +
+    "```\n" +
+    (await getChallengeProgress(challenge.challengers)) +
+    "\n```" +
+    `${daysLeft} days left. Carry on!\n` +
+    `Challenge ends on ${challenge.endDate.toLocaleString("en-US", {
+      timeZone: "Asia/Singapore",
+    })}`;
   return responseBuilder;
 };
 
 const getChallengeProgress = async (challengers) => {
-  let progress = "";
+  let scores = [];
   for (let challenger of challengers) {
     const allKatas = await getCompletedCodeKatas(challenger);
     const challenges = allKatas.filter((kata) => {
       return challengeIds.includes(kata.id);
     });
-    progress += `${challenger} -> ${challenges.length} challenge completed. ${
-      challenges.length / challengeIds.length
-    }% completion.\n`;
+    scores.push([challenger, (challenges.length / challengeIds.length) * 100]);
+    scores.sort((a, b) => {
+      if (a[1] === b[1]) return 0;
+      else if (a[1] < b[1]) return 1;
+      else return -1;
+    });
   }
-  return progress;
+  scores.splice(0, 0, ["username", "completion rate"]);
+  return table(scores);
 };

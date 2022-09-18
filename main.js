@@ -16,12 +16,9 @@ client.once("ready", () => {
 client.on("interactionCreate", interactionCreateHandler);
 
 rest
-  .put(
-    Routes.applicationCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-    {
-      body: Commands,
-    }
-  )
+  .put(Routes.applicationCommands(process.env.CLIENT_ID), {
+    body: Commands,
+  })
   .then((data) =>
     console.log(`Successfully registered ${data.length} application commands.`)
   )

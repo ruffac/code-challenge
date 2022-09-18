@@ -13,7 +13,8 @@
     "discord-api-types": "^0.37.9",
     "discord.js": "^14.3.0",
     "dotenv": "^16.0.2",
-    "mongoose": "^6.6.1"
+    "mongoose": "^6.6.1",
+    "table": "^6.8.0"
   },
   "type": "module"
 }
