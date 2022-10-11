@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "discord.js";
 import { table } from "table";
 import { CommandNames } from "../commands.js";
-import { challengeIds } from "../constants.js";
+import { challengeIds, MAX_STUDENTS_ON_TABLE } from "../constants.js";
 import { ChallengeModel } from "../database/models/challengeModel.js";
 import { getCompletedCodeKatas } from "../utils/codewars.js";
 
@@ -23,25 +23,34 @@ export const status = async (interaction) => {
     );
     return;
   }
+  await interaction.reply("Fetching stats ...");
 
-  await interaction.reply(await getChallengeStatus(challenge));
+  const status = await getChallengeStatus(challenge);
+  status.forEach(async (status) => {
+    await interaction.followUp(status);
+  });
 };
 
 export const getChallengeStatus = async (challenge) => {
   const now = new Date();
   const daysLeft = Math.ceil((challenge.endDate - now) / (1000 * 3600 * 24));
-  // let responseBuilder = "";
-  let responseBuilder =
-    `:rocket: ${challenge.name} challenge stats :rocket:\n` +
-    `${challenge.challengers.length} joined. :drum:\n` +
-    "```\n" +
-    (await getChallengeProgress(challenge.challengers)) +
-    "\n```" +
+  const progress = await getChallengeProgress(challenge.challengers);
+  let status = [];
+  const start =
+    `rocket: ${challenge.name} challenge stats :rocket:\n` +
+    `${challenge.challengers.length} joined. :drum:\n`;
+  status.push(start);
+  progress.forEach((progress) => {
+    let responseBuilder = "```\n" + progress + "\n```";
+    status.push(responseBuilder);
+  });
+  const end =
     `${daysLeft} days left. Carry on!\n` +
     `Challenge ends on ${challenge.endDate.toLocaleString("en-US", {
       timeZone: "Asia/Singapore",
     })}`;
-  return responseBuilder;
+  status.push(end);
+  return status;
 };
 
 const getChallengeProgress = async (challengers) => {
@@ -58,6 +67,13 @@ const getChallengeProgress = async (challengers) => {
       else return -1;
     });
   }
-  scores.splice(0, 0, ["username", "completion rate"]);
-  return table(scores);
+  let progressTable = [];
+  let start = 0;
+  while (start < scores.length) {
+    let partial = scores.slice(start, MAX_STUDENTS_ON_TABLE + start);
+    partial.splice(0, 0, ["username", "completion rate"]);
+    progressTable.push(table(partial));
+    start = start + MAX_STUDENTS_ON_TABLE;
+  }
+  return progressTable;
 };

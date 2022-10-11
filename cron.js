@@ -17,14 +17,16 @@ export const sendReminder = async (client) => {
 
   for (let challenge of challenges) {
     let channelId = challenge.channelId;
-    client.channels.fetch(channelId).then(async (channel) => {
-      console.log(`Sending reminder to ${channel}`);
-      try {
-        await getChallengeStatus(challenge);
-        channel.send(await getChallengeStatus(challenge));
-      } catch (error) {
-        console.error(error);
-      }
-    });
+    try {
+      client.channels.fetch(channelId).then(async (channel) => {
+        console.log(`Sending reminder to ${channel}`);
+        const status = await getChallengeStatus(challenge);
+        status.forEach(async (status) => {
+          await channel.send(status);
+        });
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 };
