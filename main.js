@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits, REST, Routes } from "discord.js";
 import * as dotenv from "dotenv";
 import { Commands } from "./commands.js";
-import { sendReminder, setReminder } from "./cron.js";
+import { sendReminder } from "./cron.js";
 import { connectDb } from "./database/connectDb.js";
 import { interactionCreateHandler } from "./events/interactionCreateHandler.js";
 
@@ -12,7 +12,7 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 client.login(process.env.TOKEN);
 client.once("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  setReminder(client);
+  // setReminder(client);
 
   const arg = process.argv.slice(2);
   if (arg.includes("sendReminder")) sendReminder(client);

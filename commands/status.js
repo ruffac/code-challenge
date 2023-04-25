@@ -37,7 +37,7 @@ export const getChallengeStatus = async (challenge) => {
   const progress = await getChallengeProgress(challenge.challengers);
   let status = [];
   const start =
-    `rocket: ${challenge.name} challenge stats :rocket:\n` +
+    `:rocket: ${challenge.name} challenge stats :rocket:\n` +
     `${challenge.challengers.length} joined. :drum:\n`;
   status.push(start);
   progress.forEach((progress) => {
@@ -56,11 +56,14 @@ export const getChallengeStatus = async (challenge) => {
 const getChallengeProgress = async (challengers) => {
   let scores = [];
   for (let challenger of challengers) {
-    const allKatas = await getCompletedCodeKatas(challenger);
+    const allKatas = (await getCompletedCodeKatas(challenger)) || [];
     const challenges = allKatas.filter((kata) => {
       return challengeIds.includes(kata.id);
     });
-    scores.push([challenger, (challenges.length / challengeIds.length) * 100]);
+    scores.push([
+      challenger,
+      Math.round((challenges.length / challengeIds.length) * 100),
+    ]);
     scores.sort((a, b) => {
       if (a[1] === b[1]) return 0;
       else if (a[1] < b[1]) return 1;
