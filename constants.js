@@ -33,7 +33,7 @@ export const challengesIds = {
     "57fe864854685b1c420002e0",
     "563d59dd8e47a5ed220000ba",
   ],
-  javascriptbeginnerfriendly: [
+  "javascript-beginner-friendly": [
     "55a70521798b14d4750000a4",
     "50654ddff44f800200000004",
     "57126304cdbf63c6770012bd",
