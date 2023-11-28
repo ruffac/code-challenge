@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "discord.js";
 import { table } from "table";
 import { CommandNames } from "../commands.js";
-import { challengeIds, MAX_STUDENTS_ON_TABLE } from "../constants.js";
+import { MAX_STUDENTS_ON_TABLE, challengesIds } from "../constants.js";
 import { ChallengeModel } from "../database/models/challengeModel.js";
 import { getCompletedCodeKatas } from "../utils/codewars.js";
 
@@ -34,7 +34,9 @@ export const status = async (interaction) => {
 export const getChallengeStatus = async (challenge) => {
   const now = new Date();
   const daysLeft = Math.ceil((challenge.endDate - now) / (1000 * 3600 * 24));
-  const progress = await getChallengeProgress(challenge.challengers);
+  const type = challenge.type;
+
+  const progress = await getChallengeProgress(challenge.challengers, type);
   let status = [];
   const start =
     `:rocket: ${challenge.name} challenge stats :rocket:\n` +
@@ -53,10 +55,11 @@ export const getChallengeStatus = async (challenge) => {
   return status;
 };
 
-const getChallengeProgress = async (challengers) => {
+const getChallengeProgress = async (challengers, type) => {
   let scores = [];
   for (let challenger of challengers) {
     const allKatas = (await getCompletedCodeKatas(challenger)) || [];
+    const challengeIds = challengesIds[type];
     const challenges = allKatas.filter((kata) => {
       return challengeIds.includes(kata.id);
     });

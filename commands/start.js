@@ -1,8 +1,10 @@
 import { SlashCommandBuilder } from "discord.js";
 import { CommandNames } from "../commands.js";
 import {
+  challengeTypes,
+  codeWarsCollectionsAPI,
   defaultChallengeDuration,
-  defaultCodewarsChallenge,
+  defaultChallengeType,
 } from "../constants.js";
 import { ChallengeModel } from "../database/models/challengeModel.js";
 
@@ -11,7 +13,32 @@ export const buildStart = () => {
     .setName(CommandNames.start)
     .setDescription("Starts a challenge")
     .addStringOption((opt) =>
-      opt.setName("name").setDescription("The challenge's name")
+      opt
+        .setName("name")
+        .setDescription("Your challenge's awesome name")
+        .setRequired(true)
+    )
+    .addStringOption((opt) =>
+      opt
+        .setName("type")
+        .setDescription("Your challenge's type")
+        .addChoices(
+          {
+            name: challengeTypes.upliftcodecamp,
+            value: challengeTypes.upliftcodecamp,
+          },
+          {
+            name: challengeTypes.javascriptbeginnerfriendly,
+            value: challengeTypes.javascriptbeginnerfriendly,
+          }
+        )
+        .setRequired(true)
+    )
+    .addIntegerOption((opt) =>
+      opt
+        .setName("duration")
+        .setDescription("For how many days is this challenge?")
+        .setRequired(true)
     );
 };
 export const start = async (interaction) => {
@@ -31,7 +58,11 @@ export const start = async (interaction) => {
   const challengeName =
     interaction.options.getString("name") ?? `${user.username}'s`;
   const now = new Date();
-  const end = new Date(now.setDate(now.getDate() + defaultChallengeDuration));
+  const duration =
+    interaction.options.getInteger("duration") || defaultChallengeDuration;
+  const end = new Date(now.setDate(now.getDate() + duration));
+  const challengeType =
+    interaction.options.getString("type") || defaultChallengeType;
 
   challenge = new ChallengeModel({
     name: challengeName,
@@ -41,6 +72,7 @@ export const start = async (interaction) => {
     channelId: channelId,
     challengers: [],
     isActive: true,
+    type: challengeType,
   });
 
   await challenge
@@ -49,7 +81,7 @@ export const start = async (interaction) => {
       await interaction.reply(
         `${challengeName} challenge is started by ${
           user.username
-        } 🚀\nHave fun!\nLink to the challenge: ${defaultCodewarsChallenge}\nChallenge will end in ${new Date(
+        } 🚀\nHave fun!\nLink to the challenge: ${codeWarsCollectionsAPI}/${challengeType}\nChallenge will end in ${new Date(
           end
         ).toISOString()}.`
       );
